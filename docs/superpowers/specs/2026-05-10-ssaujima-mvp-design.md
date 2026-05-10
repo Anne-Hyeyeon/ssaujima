@@ -40,15 +40,17 @@
 ## 2. 사용자 흐름
 
 ### 메인 플로우
-1. 랜딩 → "시작하기" 클릭 → 무료/유료 선택 화면
-2. 무료 선택 → 15문항 진행 → 즉시 결과 (룰 기반)
-3. 결과 화면 하단 "프로 리포트 받기" → 결제 목업 → 64문항 진행 → AI 분석 로딩 → 프로 결과
-4. 프로 결과: 종합 점수 + 레이더 차트 + 카테고리 막대 + 다툼 TOP 5 + AI 조언
+1. 랜딩 → "시작하기" CTA → **`/test/simple` 직행** (별도 선택 화면 없음, 무료 우선)
+2. 15문항 진행 → 결과 (`/result/simple?a=...`) — 룰 기반, 즉시 표시
+3. 심플 결과 하단 "프로 리포트 받기" CTA → `/pay` (결제 목업, **2,900원 표시**)
+4. 결제 목업 "결제하기" → `/test/pro` (64문항)
+5. 64문항 완료 → `/result/pro?a=...` 으로 navigation → `loading.tsx`가 navigation suspend 동안 노출 (AI 분석 화면) → 결과 렌더
+6. 프로 결과: 종합 점수 + 레이더 차트(11축) + 카테고리 막대 + 다툼 TOP 5 + AI 조언
 
 ### 시연 보조 플로우
-- 랜딩에 "예시 결과 보기" 보조 링크 → `/result/pro?demo=1` 즉시 진입
-- 테스트 페이지 dev 환경에서 "건너뛰기 (시연)" 버튼 → mock 답변으로 자동 완성 후 다음 단계
-- 결과 페이지에서 `?demo=1` 파라미터 감지 시 mock 데이터로 즉시 렌더
+- 랜딩 하단에 "예시 결과 보기" 보조 링크 → `/result/pro?demo=1` 즉시 진입
+- 테스트 페이지에서 URL에 `?demo=1` 있으면 "건너뛰기 (시연)" 버튼 노출 (NODE_ENV 무관, 배포 데모에서도 사용 가능)
+- 결과 페이지에서 `?demo=1` 감지 시 mock 데이터로 즉시 렌더 (a/b 파라미터 무시)
 
 ### 두 사람 입력 처리 (해커톤 단순화)
 - 정식 시스템: A 답변 → 링크 공유 → B 답변 → 결과
@@ -63,10 +65,10 @@
 ```
 app/
 ├── page.tsx                       # 랜딩
-├── layout.tsx                     # 글로벌 레이아웃 (Pretendard 로딩)
+├── layout.tsx                     # 글로벌 레이아웃 (Pretendard CDN 로드)
 ├── globals.css                    # Tailwind + CSS 변수
 │
-├── _components/                   # 랜딩 전용 (Hero, ProblemSection 등)
+├── _components/                   # 랜딩 전용 (Hero, ProblemSection 등 — landing-only)
 │
 ├── test/
 │   ├── simple/page.tsx            # 15문항
@@ -79,29 +81,32 @@ app/
 ├── result/
 │   ├── simple/page.tsx
 │   ├── pro/
-│   │   ├── page.tsx               # 레이더 차트 + AI 조언
-│   │   └── loading.tsx            # AI 분석 로딩 (Next.js 자동 로딩 UI)
-│   └── _components/               # RadarChart, CategoryBar, ConflictCard
+│   │   ├── page.tsx               # async Server Component — AI 호출 직접
+│   │   └── loading.tsx            # navigation suspend 동안 노출됨
+│   └── _components/               # RadarChart, CategoryBar, ConflictCard ('use client')
 │
-├── pay/
-│   └── page.tsx                   # 결제 목업
-│
-├── api/
-│   └── ai-advice/route.ts         # POST: 답변 → AI 맞춤 조언
-│
-├── lib/
-│   ├── calculator.ts              # 룰 기반 점수/유형/TOP5 계산
-│   ├── types.ts                   # 공통 TypeScript 타입
-│   ├── ai-prompt.ts               # AI 프롬프트 빌더
-│   ├── mock-data.ts               # 데모용 A·B 답변 풀세트
-│   └── url-codec.ts               # 답변 ↔ base64 인코딩
-│
-└── components/ui/                 # 재사용 프리미티브
-    ├── Button.tsx
-    ├── Badge.tsx
-    ├── Divider.tsx
-    └── ProgressBar.tsx
+└── pay/
+    └── page.tsx                   # 결제 목업 (2,900원 표시)
+
+lib/                               # ★ project root — App Router 영향 없음
+├── calculator.ts                  # 룰 기반 점수/유형/TOP5 계산
+├── types.ts                       # 공통 TypeScript 타입 (CategoryKey 포함)
+├── ai-advice.ts                   # generateObject 호출 + Zod schema + fallback
+├── ai-prompt.ts                   # 프롬프트 빌더
+├── mock-data.ts                   # 데모용 A·B 답변 + AI 조언 fallback
+└── url-codec.ts                   # 답변 ↔ base64 인코딩
+
+components/ui/                     # ★ project root
+├── Button.tsx
+├── Badge.tsx
+├── Divider.tsx
+└── ProgressBar.tsx
 ```
+
+**중요한 변경 (리뷰 반영)**:
+- `app/lib/`, `app/components/`는 Next.js App Router에서 라우트로 인식되므로 **프로젝트 루트**로 이동
+- API Route(`/api/ai-advice`) **제거** — Server Component에서 직접 AI 호출 → `loading.tsx`가 navigation suspend 동안 자동 노출
+- `_components/`, `_data/` 같은 underscore-prefix만 라우트 제외
 
 ### 컴포넌트 경계 원칙
 - `app/components/ui/`: 도메인 모르는 순수 프리미티브 (Button, Badge…)
@@ -111,8 +116,12 @@ app/
 
 ### 서버/클라이언트 컴포넌트 분리
 - 기본 = Server Component
-- `'use client'`: 테스트 페이지(상태), 결과 페이지(차트·AI 호출), Button 일부
-- API Route(`/api/ai-advice`)는 서버 전용 → AI Gateway 키 보호
+- `'use client'`: 테스트 페이지(`useState`, `sessionStorage`), 차트 컴포넌트(`RadarChart`, `CategoryBar`)
+- **결과 페이지(`/result/pro/page.tsx`)는 async Server Component**:
+  - `searchParams`에서 답변 디코딩 → 룰 기반 계산 → `lib/ai-advice.ts`의 `getAdvice()` 직접 await
+  - 페이지가 서스펜드되는 동안 `loading.tsx`가 자동으로 노출 (= AI 분석 화면)
+  - 차트는 `'use client'` 자식 컴포넌트로 분리 (계산 결과를 props로 전달)
+- AI Gateway 키는 Server Component 환경에서만 읽힘 → 클라이언트 노출 없음
 
 ---
 
@@ -123,12 +132,23 @@ app/
 type AnswerValue = 1 | 2 | 3 | 4;
 type Answers = AnswerValue[];           // 길이: simple=15, pro=64
 
+// 11개 카테고리 키 — 레이더 차트 축 순서도 이 순서로 고정
+type CategoryKey =
+  | 'cleaning' | 'laundry' | 'organizing' | 'food'
+  | 'rhythm'   | 'money'   | 'family'     | 'social'
+  | 'communication' | 'future' | 'digital';
+
+const CATEGORY_ORDER: CategoryKey[] = [
+  'cleaning', 'laundry', 'organizing', 'food', 'rhythm',
+  'money', 'family', 'social', 'communication', 'future', 'digital',
+];
+
 interface Question {
   id: number;
-  category: string;
+  category: CategoryKey;
   text: string;
   options: [string, string, string, string];
-  isPro?: boolean;                      // 자물쇠 표시
+  isPro?: boolean;                      // 자물쇠 표시 (랜딩의 카테고리 리스트용)
 }
 
 interface SimpleResult {
@@ -139,7 +159,7 @@ interface SimpleResult {
 }
 
 interface ProResult extends SimpleResult {
-  categoryScores: Record<CategoryKey, number>;
+  categoryScores: Record<CategoryKey, { a: number; b: number }>;  // 두 사람 각각의 점수
   top5Conflicts: ConflictDetail[];
   aiAdvice: AIAdvice;                   // AI 생성 결과
 }
@@ -147,13 +167,23 @@ interface ProResult extends SimpleResult {
 interface AIAdvice {
   perConflict: { conflictId: number; reason: string; compromise: string; cultural: string }[];
   conclusion: string;
+  isFallback?: boolean;                 // mock 사용 시 true (개발자 디버깅용)
 }
 ```
 
-### 답변 직렬화
-- `[1,3,2,4,...]` → 각 값을 2비트로 인코딩 → base64
-- 64문항 → 16바이트 → base64 약 24자 → URL에 안전
-- `lib/url-codec.ts`의 `encodeAnswers / decodeAnswers`
+### 답변 직렬화 (`lib/url-codec.ts`)
+- `[1,3,2,4,...]` → 각 값을 2비트로 인코딩 → base64url
+- 64문항 → 16바이트 → base64url 약 22자 → URL 안전
+- `encodeAnswers(answers, expectedLength)` / `decodeAnswers(str, expectedLength)`
+
+**디코딩 정책**:
+| 입력 | 처리 |
+|---|---|
+| `?a=...` 만 (b 없음) | A는 디코딩, **B는 `mock-data.ts`의 정적 답변 사용** (싱글 입력 흐름) |
+| `?b=` 길이 ≠ 기대 길이 | `redirect('/test/<track>')` |
+| `?a=` 디코딩 실패 (잘못된 base64) | `redirect('/test/<track>')` |
+| `?demo=1` | `searchParams.a/b` 무시하고 mock 풀세트 사용 |
+| 전부 누락 | `redirect('/test/<track>')` |
 
 ---
 
@@ -170,35 +200,68 @@ interface AIAdvice {
 
 ## 6. AI 통합
 
-### API Route 설계
+### Server Component에서 직접 호출
 ```ts
-// app/api/ai-advice/route.ts
-import { generateText } from 'ai';
+// lib/ai-advice.ts
+import { generateObject } from 'ai';
+import { z } from 'zod';
 
-export async function POST(req: Request) {
-  const { answersA, answersB, top5 } = await req.json();
-  const { text } = await generateText({
-    model: 'anthropic/claude-sonnet-4-6',
-    prompt: buildAdvicePrompt(answersA, answersB, top5),
-    maxTokens: 2000,
-  });
-  return Response.json(JSON.parse(text));   // AI에게 JSON 형태로 출력 요청
+const AdviceSchema = z.object({
+  perConflict: z.array(z.object({
+    conflictId: z.number(),
+    reason: z.string(),
+    compromise: z.string(),
+    cultural: z.string(),
+  })),
+  conclusion: z.string(),
+});
+
+export async function getAdvice(
+  answersA: Answers, answersB: Answers, top5: ConflictDetail[]
+): Promise<AIAdvice> {
+  try {
+    const { object } = await generateObject({
+      model: 'anthropic/claude-sonnet-4-6',
+      schema: AdviceSchema,
+      prompt: buildAdvicePrompt(answersA, answersB, top5),
+    });
+    return object;
+  } catch (err) {
+    console.error('[ai-advice] falling back to mock', err);
+    return { ...MOCK_ADVICE, isFallback: true };
+  }
 }
 ```
 
+```ts
+// app/result/pro/page.tsx
+export default async function ProResultPage({ searchParams }: { searchParams: Promise<{ a?: string; b?: string; demo?: string }> }) {
+  const { a, b, demo } = await searchParams;
+  const { answersA, answersB } = resolveAnswers({ a, b, demo });    // demo 분기 + 폴백
+  const computed = computePro(answersA, answersB);                   // 룰 기반
+  const advice = await getAdvice(answersA, answersB, computed.top5Conflicts);
+  return <ProResultView computed={computed} advice={advice} />;     // 'use client' child
+}
+```
+
+**핵심**:
+- `generateObject` + Zod 스키마 사용 → JSON.parse 실패 클래스 자체 제거
+- try/catch로 AI 실패 시 mock 조언 반환 (시연 안전망)
+- API Route 불필요 — Server Component가 곧 백엔드. `loading.tsx`가 navigation 동안 자동 노출
+
 ### 프롬프트 전략 (`lib/ai-prompt.ts`)
-- 시스템 프롬프트: "당신은 결혼·커플 상담 전문가" + 톤 가이드 (따뜻하지만 현실적, 한국 정서)
-- 출력은 JSON 강제: `{ perConflict: [...], conclusion: "..." }`
-- 실패 시 fallback: `lib/mock-data.ts`의 정적 조언 사용 (시연 안전망)
+- 시스템 메시지: "당신은 결혼·커플 상담 전문가" + 톤 가이드 (따뜻하지만 현실적, 한국 정서, "~해요" 체)
+- 사용자 메시지: A·B 답변 요약 + TOP5 충돌 항목
+- Zod 스키마가 출력 형태를 보장하므로 프롬프트는 자연어로 명료하게만
 
 ### 환경변수
-- `AI_GATEWAY_API_KEY` — `.env.local`에 (Vercel 배포 시 자동 주입 가능)
+- `AI_GATEWAY_API_KEY` — `.env.local`에 (Vercel 배포 시 OIDC로 자동 주입 가능)
 - `.env.example` 생성하여 키 이름 문서화
 
-### 비용 안전장치
-- 클라이언트에서 호출 횟수 제한 (sessionStorage 플래그)
-- API Route에서 답변 길이 검증 (정확히 64개)
-- 추후 Vercel Firewall 레이트 리밋 가능 (해커톤 단계는 미적용)
+### 비용 / 남용 안전장치 (해커톤 수준)
+- 답변 길이 서버 측 검증 (정확히 64개, 1~4 값만)
+- **공개 데모 URL의 남용은 의도적으로 미대응** — 해커톤 발표 끝나면 Vercel 환경변수 제거하면 끝
+- 추후 운영 시: Vercel Firewall 레이트 리밋 + 답변 해시 dedup 캐시
 
 ---
 
@@ -227,11 +290,11 @@ export async function POST(req: Request) {
 | # | 장치 | 구현 위치 |
 |---|---|---|
 | 1 | mock A·B 풀세트 답변 | `lib/mock-data.ts` — 의도적으로 충돌 많은 답변 셋 (시각적 임팩트) |
-| 2 | `/result/pro?demo=1` 즉시 진입 | result/pro/page.tsx에서 searchParams 분기 |
-| 3 | 테스트 페이지 "건너뛰기" 버튼 | `process.env.NODE_ENV === 'development'`에서만 노출 |
-| 4 | AI 로딩 단계 애니메이션 | `result/pro/loading.tsx` — 3단계 (≈6초) |
-| 5 | 랜딩 "예시 결과 보기" | landing 하단 보조 링크 |
-| 6 | AI 호출 실패 fallback | API Route에서 mock 조언 반환 (네트워크 사고 대비) |
+| 2 | `/result/pro?demo=1` 즉시 진입 | `result/pro/page.tsx`에서 `searchParams` 분기 |
+| 3 | 테스트 페이지 "건너뛰기" 버튼 | URL에 `?demo=1` 있으면 노출 (배포 데모 URL에서도 사용 가능) |
+| 4 | AI 분석 화면 | `result/pro/loading.tsx` — 3단계 텍스트 애니메이션. Server Component가 `getAdvice()` await 동안 자동 노출 |
+| 5 | 랜딩 "예시 결과 보기" | 랜딩 하단 보조 링크 |
+| 6 | AI 호출 실패 fallback | `lib/ai-advice.ts`의 try/catch → mock 조언 반환 (네트워크/할당량 사고 대비). 결과에 `isFallback: true` 마킹 |
 
 ---
 
@@ -239,14 +302,16 @@ export async function POST(req: Request) {
 
 | Phase | 결과물 | 완료 기준 |
 |---|---|---|
-| **P1 — 토대** | 디자인 토큰 + UI 프리미티브(Button, Badge, ProgressBar, Divider) + 글로벌 레이아웃 + Pretendard | 토큰을 사용한 임시 페이지 1장이 스펙처럼 보임 |
-| **P2 — 랜딩** | 히어로 + 01·02·03·04 섹션 + 푸터 | 스크린샷 비교 시 기획서 스펙 준수 |
-| **P3 — 심플 트랙** | `/test/simple` + `/result/simple` + `lib/calculator.ts` 기본 함수 | 사용자가 15문항 풀고 점수·유형 결과를 본다 |
-| **P4 — 프로 트랙** | `/pay` 목업 + `/test/pro` + `/result/pro` + AI Route + 레이더/막대 차트 + AI 조언 + `loading.tsx` | 사용자가 64문항 풀면 AI 결과까지 본다 |
-| **P5 — 시연 보조** | mock-data, demo URL, "건너뛰기", 예시 결과 링크, AI fallback | 라이브 실패해도 발표 진행 가능 |
-| **P6 — 디테일 (시간 남으면)** | 링크 공유 인코딩 본격화, PDF 다운로드, 마이크로 인터랙션 | 우선순위 낮음 |
+| **P1 — 토대** | 디자인 토큰 + UI 프리미티브 + 글로벌 레이아웃 + Pretendard CDN | 토큰을 사용한 임시 페이지 1장이 스펙처럼 보임 |
+| **P2 — 랜딩** | 히어로 + 01·02·03·04 섹션 + 푸터 | 기획서 스펙대로 렌더링 |
+| **P3 — 심플 트랙 + 계산기 풀세트** | `/test/simple` + `/result/simple` + `lib/calculator.ts` **전체** (점수·유형·카테고리·TOP5 — P4에서도 재사용) + `lib/url-codec.ts` + `lib/mock-data.ts` | 15문항 풀어 결과 보기 + URL 라운드트립 동작 |
+| **P4 — 프로 트랙** | `/pay` 목업 + `/test/pro` + `/result/pro` async Server Component + `lib/ai-advice.ts` + 레이더/막대 차트 (Recharts) + `loading.tsx` | 64문항 풀어 AI 결과까지 |
+| **P5 — 시연 보조** | demo URL 분기, "건너뛰기" 버튼, "예시 결과 보기" 링크, AI fallback 검증 | 발표 라이브 실패해도 진행 가능 |
+| **P6 — 디테일 (시간 남으면)** | 양쪽 입력 링크 공유, PDF 다운로드, 마이크로 인터랙션 | 우선순위 낮음 |
 
-P1~P5가 해커톤 필수. P6는 시간 따라 선택.
+P1~P5가 해커톤 필수. P6는 시간 따라.
+
+**계산기 분리 안 함**: P3에서 `calculator.ts` 전체를 작성. P4의 `/result/pro`는 같은 함수를 64문항에 적용할 뿐이므로 P3·P4 간 카테고리/TOP5 코드 중복이나 재작업 없음.
 
 ---
 
@@ -272,11 +337,11 @@ P1~P5가 해커톤 필수. P6는 시간 따라 선택.
 
 ---
 
-## 12. 미해결 / 추후 결정
+## 12. 결정 사항 (이전 미해결 항목 확정)
 
-- Recharts와 Tailwind v4의 정확한 호환성 — 빌드 시 문제 생기면 `react-chartjs-2` 또는 직접 SVG 작성으로 대체
-- Pretendard 로딩: next/font/local로 셋업할지 CDN으로 갈지 — 빠르면 CDN, 빌드 안정성은 next/font
-- AI Gateway 모델 전환: 비용 보면 Haiku 4.5로 다운그레이드 옵션 보유
+- **Pretendard**: CDN 방식 채택. `app/layout.tsx`에서 `<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">` 한 줄. 해커톤 속도 우선
+- **Recharts**: P4 시작 시 React 19 + Tailwind v4 환경에서 빌드 검증. 30분 안에 안 되면 수동 SVG로 폴백 (레이더 차트 11축은 SVG로도 100줄 이내)
+- **AI 모델**: `anthropic/claude-sonnet-4-6` 기본. 비용 우려 시 환경변수로 모델 키 외부화하여 `anthropic/claude-haiku-4-5`로 핫스왑 가능
 
 ---
 
@@ -284,7 +349,8 @@ P1~P5가 해커톤 필수. P6는 시간 따라 선택.
 
 ```
 ai                          # Vercel AI SDK
-recharts                    # 레이더 차트
+zod                         # generateObject schema
+recharts                    # 레이더 차트 (P4에서 빌드 검증)
 clsx                        # 조건부 클래스
 ```
 
