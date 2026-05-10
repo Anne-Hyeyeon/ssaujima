@@ -1,5 +1,7 @@
 // Document-style header used at the top of both Simple and Pro reports.
-// Inspired by Notion / Apple report layouts: small label, big title, metadata row.
+// Inspired by Notion / Apple report layouts: hero visual, small label, big title, metadata row.
+
+import Image from 'next/image'
 
 interface IReportHeaderProps {
   badge: string
@@ -20,6 +22,17 @@ export const ReportHeader = ({
 }: IReportHeaderProps) => {
   return (
     <header className="mb-12">
+      <div className="relative w-full aspect-[16/9] sm:aspect-[2/1] mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-[#ffeef3] via-[#fdf6ff] to-[#e8f1ff]">
+        <Image
+          src="/report-couple-hero-transparent.png"
+          alt="두 사람이 마주 보고 미소 짓는 일러스트"
+          fill
+          priority
+          sizes="(min-width: 768px) 768px, 100vw"
+          className="object-contain object-bottom drop-shadow-[0_8px_24px_rgba(244,123,155,0.15)]"
+        />
+      </div>
+
       <div className="flex items-center gap-2 mb-5">
         <span className="inline-block bg-[#ffeef3] text-[#c2185b] text-[11px] font-semibold tracking-[0.08em] uppercase px-2.5 py-1 rounded-md">
           {badge}

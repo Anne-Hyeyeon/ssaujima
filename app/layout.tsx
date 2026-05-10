@@ -14,13 +14,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="h-full">
-      <head>
+      <body className="min-h-full flex flex-col">
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css"
         />
-      </head>
-      <body className="min-h-full flex flex-col">
         <Header />
         {children}
       </body>

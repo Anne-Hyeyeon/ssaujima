@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation'
 import { decodeAnswers } from '../../../lib/url-codec'
 import { computePro } from '../../../lib/calculator'
-import { getAdvice } from '../../../lib/ai-advice'
-import { MOCK_ANSWERS_A_PRO, MOCK_ANSWERS_B_PRO } from '../../../lib/mock-data'
+// import { getAdvice } from '../../../lib/ai-advice'
+import { MOCK_ANSWERS_A_PRO, MOCK_ANSWERS_B_PRO, MOCK_AI_ADVICE } from '../../../lib/mock-data'
 import { QUESTIONS_PRO } from '../../test/_data/questions-pro'
 import ProResultView from '../_components/ProResultView'
 import type { AnswerValue, ProResult } from '../../../lib/types'
@@ -35,7 +35,8 @@ export default async function ProResultPage({
   }
 
   const computed = computePro(answersA!, answersB!, QUESTIONS_PRO)
-  const advice = await getAdvice(answersA!, answersB!, computed.top5Conflicts)
+  // AI advice temporarily disabled — using mock fallback
+  const advice = { ...MOCK_AI_ADVICE, isFallback: true }
 
   const fullResult: ProResult = { ...computed, aiAdvice: advice }
 
