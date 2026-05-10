@@ -47,6 +47,12 @@
 5. 64문항 완료 → `/result/pro?a=...` 으로 navigation → `loading.tsx`가 navigation suspend 동안 노출 (AI 분석 화면) → 결과 렌더
 6. 프로 결과: 종합 점수 + 레이더 차트(11축) + 카테고리 막대 + 다툼 TOP 5 + AI 조언
 
+### 마이페이지 플로우 (목업)
+1. 헤더 "로그인" → `/login` (이름 1개만 입력하는 목업 폼)
+2. 로그인 후 헤더의 "마이페이지" 또는 결과 화면의 "리포트 저장" 버튼으로 진입
+3. `/my` 진입: 저장된 리포트 목록 + 현재 구독 플랜 카드(무료/프로) + 플랜 변경 버튼(목업)
+4. 저장 리포트 카드 클릭 → `/my/[id]` 에서 저장 시점 데이터 그대로 렌더 (재계산·재호출 없음)
+
 ### 시연 보조 플로우
 - 랜딩 하단에 "예시 결과 보기" 보조 링크 → `/result/pro?demo=1` 즉시 진입
 - 테스트 페이지에서 URL에 `?demo=1` 있으면 "건너뛰기 (시연)" 버튼 노출 (NODE_ENV 무관, 배포 데모에서도 사용 가능)
@@ -85,8 +91,16 @@ app/
 │   │   └── loading.tsx            # navigation suspend 동안 노출됨
 │   └── _components/               # RadarChart, CategoryBar, ConflictCard ('use client')
 │
-└── pay/
-    └── page.tsx                   # 결제 목업 (2,900원 표시)
+├── pay/
+│   └── page.tsx                   # 결제 목업 (2,900원 표시)
+│
+├── login/
+│   └── page.tsx                   # 목업 로그인 (이름만 입력)
+│
+└── my/
+    ├── page.tsx                   # 마이페이지 (저장 리포트 목록 + 구독 카드)
+    ├── _components/               # SavedReportCard, PlanCard
+    └── [id]/page.tsx              # 저장된 리포트 상세 (저장 시점 데이터 그대로 렌더)
 
 lib/                               # ★ project root — App Router 영향 없음
 ├── calculator.ts                  # 룰 기반 점수/유형/TOP5 계산
@@ -94,7 +108,9 @@ lib/                               # ★ project root — App Router 영향 없�
 ├── ai-advice.ts                   # generateObject 호출 + Zod schema + fallback
 ├── ai-prompt.ts                   # 프롬프트 빌더
 ├── mock-data.ts                   # 데모용 A·B 답변 + AI 조언 fallback
-└── url-codec.ts                   # 답변 ↔ base64 인코딩
+├── url-codec.ts                   # 답변 ↔ base64 인코딩
+├── mock-auth.ts                   # 목업 로그인 (localStorage에 user 저장)
+└── saved-reports.ts               # 저장 리포트 CRUD (localStorage 기반)
 
 components/ui/                     # ★ project root
 ├── Button.tsx
@@ -298,6 +314,55 @@ export default async function ProResultPage({ searchParams }: { searchParams: Pr
 
 ---
 
+## 8.5. 마이페이지 (목업)
+
+### 데이터 모델
+```ts
+// lib/types.ts (추가)
+interface MockUser {
+  id: string;            // crypto.randomUUID() — 로그인 시 발급
+  name: string;          // 사용자가 입력한 이름
+  plan: 'free' | 'pro';  // 결제 목업 완료 시 'pro'로 변경
+  createdAt: string;
+}
+
+interface SavedReport {
+  id: string;
+  userId: string;
+  type: 'simple' | 'pro';
+  createdAt: string;
+  // 저장 시점 데이터 스냅샷 — 재계산 안 함
+  answersA: Answers;
+  answersB: Answers;
+  computed: SimpleResult | ProResult;
+}
+```
+
+### localStorage 스키마
+- `ssaujima:user` → `MockUser | null`
+- `ssaujima:reports` → `SavedReport[]` (최신순)
+
+### 컴포넌트
+- `app/login/page.tsx`: 이름 입력 폼 → `mock-auth.ts`의 `signIn(name)` 호출 → `/my`로 이동
+- `app/my/page.tsx`: `'use client'` — localStorage 읽어 리포트 목록 + 플랜 카드 렌더
+- `app/my/[id]/page.tsx`: `'use client'` — id로 SavedReport 찾아 결과 화면 재렌더 (`/result/*` 컴포넌트 재사용)
+- 결과 화면(`/result/simple`, `/result/pro`)에 **"리포트 저장" 버튼** 추가:
+  - 비로그인 시: `/login`으로 리다이렉트 후 돌아오기 (returnTo 쿼리)
+  - 로그인 시: `saved-reports.ts`의 `saveReport()` → 토스트 "저장됨" 후 `/my`로 이동 (선택)
+
+### 헤더 통합
+- 글로벌 헤더에 user 상태에 따라 "로그인" ↔ "마이페이지 / 로그아웃" 토글
+- 헤더는 `'use client'` 컴포넌트로 layout에 마운트 (localStorage 접근 필요)
+
+### 구독 플랜 카드 (마이페이지 내부)
+- 무료 사용자: "프로 플랜" 카드 + "업그레이드" 버튼 → `/pay`
+- 프로 사용자: "프로 플랜 이용 중" + 결제일·다음 결제일 더미 표시 + "해지" 버튼 (클릭 시 plan을 free로 되돌리는 목업)
+
+### 결제 → 플랜 전환
+- `/pay`의 "결제하기" 버튼 클릭 시 (목업) → `mock-auth.ts`의 `upgradeToPro()` 호출 → user.plan을 'pro'로 → `/test/pro`로 이동
+
+---
+
 ## 9. 단계별 빌드 우선순위
 
 | Phase | 결과물 | 완료 기준 |
@@ -307,9 +372,10 @@ export default async function ProResultPage({ searchParams }: { searchParams: Pr
 | **P3 — 심플 트랙 + 계산기 풀세트** | `/test/simple` + `/result/simple` + `lib/calculator.ts` **전체** (점수·유형·카테고리·TOP5 — P4에서도 재사용) + `lib/url-codec.ts` + `lib/mock-data.ts` | 15문항 풀어 결과 보기 + URL 라운드트립 동작 |
 | **P4 — 프로 트랙** | `/pay` 목업 + `/test/pro` + `/result/pro` async Server Component + `lib/ai-advice.ts` + 레이더/막대 차트 (Recharts) + `loading.tsx` | 64문항 풀어 AI 결과까지 |
 | **P5 — 시연 보조** | demo URL 분기, "건너뛰기" 버튼, "예시 결과 보기" 링크, AI fallback 검증 | 발표 라이브 실패해도 진행 가능 |
-| **P6 — 디테일 (시간 남으면)** | 양쪽 입력 링크 공유, PDF 다운로드, 마이크로 인터랙션 | 우선순위 낮음 |
+| **P6 — 마이페이지 (목업)** | `/login` + `/my` + `/my/[id]` + 헤더 통합 + 결과 화면 "저장" 버튼 + 결제 → 플랜 전환 + `lib/mock-auth.ts` + `lib/saved-reports.ts` | 로그인 → 결과 저장 → 마이페이지에서 다시 보기 → 구독 플랜 카드 표시 까지 동작 |
+| **P7 — 디테일 (시간 남으면)** | 양쪽 입력 링크 공유, PDF 다운로드, 마이크로 인터랙션 | 우선순위 낮음 |
 
-P1~P5가 해커톤 필수. P6는 시간 따라.
+P1~P6이 해커톤 필수. P7은 시간 따라.
 
 **계산기 분리 안 함**: P3에서 `calculator.ts` 전체를 작성. P4의 `/result/pro`는 같은 함수를 64문항에 적용할 뿐이므로 P3·P4 간 카테고리/TOP5 코드 중복이나 재작업 없음.
 
