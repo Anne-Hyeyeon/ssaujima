@@ -1,26 +1,35 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #fafaf9;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #6b6b6b;
+  --color-text-tertiary: #a0a0a0;
+  --color-border: #e8e8e6;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-pink: #f47b9b;
+  --color-pink-dark: #c2185b;
+  --color-pink-pastel: #ffeef3;
+
+  --color-blue: #6b9bd8;
+  --color-blue-dark: #2c5282;
+  --color-blue-pastel: #e8f0fa;
+
+  --color-accent: #1a1a1a;
+
+  --color-pastel-peach: #fff0e8;
+  --color-pastel-lavender: #f0ebf8;
+  --color-pastel-mint: #e8f4ee;
+  --color-pastel-beige: #f8f4ee;
+
+  --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
