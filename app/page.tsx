@@ -1,4 +1,5 @@
 import HeroSection from './_components/HeroSection'
+import GetStartedSection from './_components/GetStartedSection'
 import ProblemSection from './_components/ProblemSection'
 import HowSection from './_components/HowSection'
 import DifferenceSection from './_components/DifferenceSection'
@@ -11,6 +12,7 @@ export default function Home() {
     <>
       <main>
         <HeroSection />
+        <GetStartedSection />
         <ProblemSection />
         <HowSection />
         <DifferenceSection />

@@ -39,5 +39,11 @@ export default async function ProResultPage({
 
   const fullResult: ProResult = { ...computed, aiAdvice: advice }
 
-  return <ProResultView computed={fullResult} />
+  return (
+    <ProResultView
+      computed={fullResult}
+      answersA={answersA!}
+      answersB={answersB!}
+    />
+  )
 }

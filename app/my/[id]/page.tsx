@@ -42,9 +42,17 @@ export default function SavedReportPage() {
       </div>
 
       {report.type === 'simple' ? (
-        <SimpleResultView computed={report.computed as SimpleResult} />
+        <SimpleResultView
+          computed={report.computed as SimpleResult}
+          answersA={report.answersA}
+          answersB={report.answersB}
+        />
       ) : (
-        <ProResultView computed={report.computed as ProResult} />
+        <ProResultView
+          computed={report.computed as ProResult}
+          answersA={report.answersA}
+          answersB={report.answersB}
+        />
       )}
     </main>
   )

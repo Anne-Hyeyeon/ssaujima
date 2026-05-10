@@ -32,5 +32,11 @@ export default async function SimpleResultPage({
 
   const computed = computeSimple(answersA!, answersB!, QUESTIONS_SIMPLE)
 
-  return <SimpleResultView computed={computed} />
+  return (
+    <SimpleResultView
+      computed={computed}
+      answersA={answersA!}
+      answersB={answersB!}
+    />
+  )
 }

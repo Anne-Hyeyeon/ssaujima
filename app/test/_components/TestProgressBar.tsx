@@ -1,7 +1,5 @@
 'use client'
 
-// Test UI: progress bar with count display for 싸우지마 test
-
 import clsx from 'clsx'
 
 interface ITestProgressBarProps {
@@ -14,24 +12,30 @@ export const TestProgressBar = ({ current, total, color = 'pink' }: ITestProgres
   const pct = Math.min(100, Math.round((current / total) * 100))
 
   return (
-    <div className="w-full px-6 pt-5">
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-1 rounded-full bg-[#e8e8e6] overflow-hidden">
-          <div
-            className={clsx(
-              'h-full rounded-full transition-all duration-300',
-              color === 'pink' ? 'bg-[#f47b9b]' : 'bg-[#6b9bd8]',
-            )}
-            style={{ width: `${pct}%` }}
-            role="progressbar"
-            aria-valuenow={current}
-            aria-valuemin={1}
-            aria-valuemax={total}
-          />
-        </div>
-        <span className="text-sm text-[#a0a0a0] shrink-0 tabular-nums">
-          {current} / {total}
+    <div className="w-full">
+      <div className="flex items-center justify-end mb-1.5">
+        <span className={clsx(
+          'text-xs font-semibold',
+          color === 'pink' ? 'text-[#f47b9b]' : 'text-[#6b9bd8]',
+        )}>
+          {pct}%
         </span>
+      </div>
+      <div className="h-1.5 rounded-full bg-[#ede8f5] overflow-hidden">
+        <div
+          className={clsx(
+            'h-full rounded-full transition-all duration-500',
+            color === 'pink'
+              ? 'bg-gradient-to-r from-[#f47b9b] to-[#e05e85]'
+              : 'bg-gradient-to-r from-[#6b9bd8] to-[#4b7bb8]',
+          )}
+          style={{ width: `${pct}%` }}
+          role="progressbar"
+          aria-valuenow={current}
+          aria-valuemin={1}
+          aria-valuemax={total}
+          aria-label={`진행률 ${pct}%`}
+        />
       </div>
     </div>
   )

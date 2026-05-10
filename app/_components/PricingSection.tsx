@@ -9,6 +9,7 @@ interface IPlan {
   name: string
   price: string
   duration: string
+  note: string
   features: IPlanFeature[]
   ctaLabel: string
   ctaHref: string
@@ -19,12 +20,13 @@ const PLANS: IPlan[] = [
   {
     name: '심플',
     price: '무료',
-    duration: '15문항 · 2분',
+    duration: '15문항 · 약 2분',
+    note: '핵심만 빠르게',
     features: [
-      { text: '궁합 점수' },
-      { text: '유형 진단' },
-      { text: '잘 맞는 부분' },
-      { text: '부딪힐 수 있는 부분' },
+      { text: '궁합 점수 (100점 만점)' },
+      { text: '나의 생활 유형 진단' },
+      { text: '잘 맞는 부분 리스트' },
+      { text: '부딪힐 수 있는 부분 리스트' },
     ],
     ctaLabel: '무료로 시작',
     ctaHref: '/test/simple',
@@ -33,12 +35,13 @@ const PLANS: IPlan[] = [
     name: '프로',
     price: '2,900원',
     duration: '64문항 · 7~10분',
+    note: '결혼 전 필수 코스',
     features: [
-      { text: '심플 전체 포함' },
-      { text: '11개 영역별 분석' },
-      { text: '레이더 차트' },
-      { text: 'AI 맞춤 조언' },
-      { text: '다툼 TOP 5' },
+      { text: '심플 항목 전부 포함' },
+      { text: '11개 영역 심층 분석' },
+      { text: '레이더 차트 시각화' },
+      { text: 'AI 맞춤 조언 & 절충안' },
+      { text: '다툼 가능성 TOP 5' },
     ],
     ctaLabel: '프로 시작하기',
     ctaHref: '/pay',
@@ -54,11 +57,15 @@ export const PricingSection = () => {
           <span className="text-[#f47b9b]">04</span>
           <span className="text-[#6b6b6b]"> — 가격</span>
         </p>
-        <h2 className="text-[32px] font-medium tracking-[-0.02em] leading-[1.2] text-[#1a1a1a] mb-10">
+        <h2 className="text-[32px] font-medium tracking-[-0.02em] leading-[1.2] text-[#1a1a1a] mb-4">
           딱 2,900원으로
           <br />
-          싸울 일 줄여요.
+          싸울 일을 줄여요.
         </h2>
+        <p className="text-[15px] text-[#6b6b6b] leading-relaxed mb-10 max-w-sm">
+          결혼식보다 신혼생활이 길어요.<br />
+          2,900원짜리 진단 하나가 수십 번의 싸움을 막을 수도 있어요.
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {PLANS.map((plan) => (
             <div
@@ -82,6 +89,7 @@ export const PricingSection = () => {
                   {plan.recommended && <Badge>추천</Badge>}
                 </div>
                 <p className="text-[#a0a0a0] text-sm">{plan.duration}</p>
+                <p className="text-[12px] text-[#f47b9b] font-medium mt-1">{plan.note}</p>
               </div>
               <p className="text-[28px] font-medium tracking-[-0.02em] text-[#1a1a1a]">
                 {plan.price}
@@ -89,7 +97,7 @@ export const PricingSection = () => {
               <ul className="flex flex-col gap-2.5 flex-1">
                 {plan.features.map((f) => (
                   <li key={f.text} className="flex items-center gap-2 text-[15px] text-[#6b6b6b]">
-                    <span className="text-[#f47b9b] font-medium" aria-hidden="true">✓</span>
+                    <span className="text-[#f47b9b] font-medium shrink-0" aria-hidden="true">✓</span>
                     {f.text}
                   </li>
                 ))}

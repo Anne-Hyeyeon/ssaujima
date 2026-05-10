@@ -29,11 +29,16 @@ export const DifferenceSection = () => {
           <span className="text-[#f47b9b]">03</span>
           <span className="text-[#6b6b6b]"> — 차별점</span>
         </p>
-        <h2 className="text-[32px] font-medium tracking-[-0.02em] leading-[1.2] text-[#1a1a1a] mb-10">
+        <h2 className="text-[32px] font-medium tracking-[-0.02em] leading-[1.2] text-[#1a1a1a] mb-4">
           11개 영역,
           <br />
           전부 다룹니다.
         </h2>
+        <p className="text-[15px] text-[#6b6b6b] leading-relaxed mb-10 max-w-sm">
+          청결·수면·돈·가족·미래·소통까지.<br />
+          막상 살다 보면 이 모든 게 다 갈등이 돼요.<br />
+          프로 리포트는 PRO 항목까지 전부 분석해줘요.
+        </p>
         <div className="bg-white/50 rounded-2xl overflow-hidden">
           {CATEGORIES.map((cat, idx) => (
             <div key={cat.label}>
