@@ -13,6 +13,7 @@ import {
   computeReportStats,
   formatReportDate,
   formatReportId,
+  SCORE_BAND_ACTION_MESSAGES,
 } from '../../../lib/report-stats'
 import ReportHeader from './ReportHeader'
 import SectionLabel from './SectionLabel'
@@ -53,12 +54,17 @@ export const SimpleResultView = ({
 }: ISimpleResultViewProps) => {
   const { score, type, typeName, goodMatches, conflicts } = computed
 
+  const SIMPLE_CATEGORY_KEYS = new Set(['cleaning', 'laundry', 'organizing', 'rhythm'])
+
   const categoryRows = buildCategoryRows(
     answersA as never,
     answersB as never,
     QUESTIONS_SIMPLE,
     null,
-  )
+  ).filter((row) => SIMPLE_CATEGORY_KEYS.has(row.key))
+
+  const filteredGoodMatches = goodMatches.filter((m) => SIMPLE_CATEGORY_KEYS.has(m.category))
+  const filteredConflicts = conflicts.filter((m) => SIMPLE_CATEGORY_KEYS.has(m.category))
   const stats = computeReportStats(
     answersA as never,
     answersB as never,
@@ -120,10 +126,11 @@ export const SimpleResultView = ({
               <h3 id="sec-summary" className="text-[20px] font-semibold tracking-[-0.015em] mb-1.5">
                 {scoreHeadline(stats.scoreBand)}
               </h3>
-              <p className="text-[14px] text-[#6b6b6b] leading-relaxed">
-                전체 응답자 기준 상위{' '}
-                <span className="text-[#1a1a1a] font-semibold">{stats.scorePercentile}%</span>에
-                해당하는 결과예요. 평균 답변 차이는{' '}
+              <p className="text-[15px] text-[#1a1a1a] font-semibold leading-relaxed mb-1">
+                {SCORE_BAND_ACTION_MESSAGES[stats.scoreBand]}
+              </p>
+              <p className="text-[13px] text-[#6b6b6b] leading-relaxed">
+                평균 답변 차이는{' '}
                 <span className="text-[#1a1a1a] font-semibold tabular-nums">
                   {stats.avgDiff.toFixed(1)}점
                 </span>
@@ -206,7 +213,7 @@ export const SimpleResultView = ({
           <h3 id="sec-strength" className="sr-only">
             잘 맞는 부분
           </h3>
-          <StrengthsList items={goodMatches} />
+          <StrengthsList items={filteredGoodMatches} />
         </section>
 
         {/* 05 — Cautions */}
@@ -219,7 +226,7 @@ export const SimpleResultView = ({
           <h3 id="sec-caution" className="sr-only">
             신경 써야 할 부분
           </h3>
-          <CautionsList items={conflicts} />
+          <CautionsList items={filteredConflicts} />
 
           <div className="mt-6 border border-[#e8e8e6] rounded-2xl px-5 py-4 bg-[#fafaf9] flex items-start gap-3">
             <span

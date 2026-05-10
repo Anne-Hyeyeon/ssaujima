@@ -1,33 +1,49 @@
 // Shared lib: mock data for development and demo mode
 
-import type { Answers, AnswerValue, AIAdvice } from './types'
+import type { Answers, AnswerValue, AIAdvice, Gender } from './types'
 
-// Person A: clean, morning, minimal, save money
+// Generates a plausible random answer set of a given length.
+// Uses a gender-biased nudge so demo answers feel realistic, not uniformly random.
+export const generateDemoAnswers = (length: number, gender: Gender): AnswerValue[] => {
+  // Female demo lean: tidy / morning-ish / planner — biased toward 1-2.
+  // Male demo lean: more relaxed / night / spontaneous — biased toward 3-4.
+  const bias = gender === 'female' ? -0.6 : 0.6
+  return Array.from({ length }, () => {
+    const center = 2.5 + bias
+    const v = Math.round(center + (Math.random() - 0.5) * 2.4)
+    return Math.min(4, Math.max(1, v)) as AnswerValue
+  })
+}
+
+// Demo Person A — leans tidy / planner / morning (→ "새벽의 정리왕" type).
+// Tuned so that A vs B compatibility score lands in the 65-70 ("good") band:
+// realistic enough to show meaningful differences but not catastrophic.
 export const MOCK_ANSWERS_A: AnswerValue[] = [
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 4,
+  2, 1, 1, 2, 3, 1, 1, 2, 1, 1, 2, 3, 2, 1, 4,
 ] as AnswerValue[]
 
-// Person B: relaxed, night owl, maximal, spend money
+// Demo Person B — leans more relaxed / spontaneous / night owl.
 export const MOCK_ANSWERS_B: AnswerValue[] = [
-  4, 4, 4, 3, 3, 4, 4, 4, 4, 4, 4, 4, 1, 3, 1,
+  2, 2, 2, 4, 3, 2, 3, 4, 2, 1, 1, 3, 4, 2, 3,
 ] as AnswerValue[]
 
-// Person A PRO (64 items): extend A's pattern — mostly 1s with some 2s for middle items
+// Person A PRO (64 items): first 15 match simple, rest mostly 1-3 with some 2-3.
+// Tuned for ~65-70 compatibility against MOCK_ANSWERS_B_PRO.
 export const MOCK_ANSWERS_A_PRO: Answers = [
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 4, // 1-15 same as simple
-  1, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, // 16-30
-  1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, // 31-45
-  1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, // 46-60
-  1, 1, 1, 2,                                    // 61-64
+  2, 1, 1, 2, 3, 1, 1, 2, 1, 1, 2, 3, 2, 1, 4, // 1-15 (matches simple)
+  2, 3, 1, 2, 1, 3, 2, 1, 2, 3, 1, 2, 3, 1, 2, // 16-30
+  1, 2, 3, 1, 4, 2, 1, 3, 2, 1, 2, 4, 1, 3, 2, // 31-45
+  3, 1, 2, 4, 1, 2, 1, 3, 2, 1, 4, 2, 1, 3, 2, // 46-60
+  1, 2, 3, 2,                                    // 61-64
 ] as AnswerValue[]
 
-// Person B PRO (64 items): extend B's pattern — mostly 4s with some 3s
+// Person B PRO (64 items): first 15 match simple, rest leans 2-4 with overlap.
 export const MOCK_ANSWERS_B_PRO: Answers = [
-  4, 4, 4, 3, 3, 4, 4, 4, 4, 4, 4, 4, 1, 3, 1, // 1-15 same as simple
-  4, 4, 3, 4, 4, 3, 4, 4, 4, 3, 4, 4, 4, 3, 4, // 16-30
-  4, 4, 3, 4, 4, 4, 3, 4, 4, 3, 4, 4, 4, 3, 4, // 31-45
-  4, 4, 4, 3, 4, 4, 3, 4, 4, 4, 3, 4, 4, 4, 3, // 46-60
-  4, 4, 4, 3,                                    // 61-64
+  2, 2, 2, 4, 3, 2, 3, 4, 2, 1, 1, 3, 4, 2, 3, // 1-15 (matches simple)
+  3, 1, 2, 4, 3, 1, 3, 2, 2, 4, 2, 3, 4, 1, 2, // 16-30
+  2, 4, 3, 2, 3, 3, 3, 3, 2, 2, 3, 4, 3, 3, 3, // 31-45
+  4, 3, 2, 4, 2, 3, 1, 4, 3, 3, 3, 2, 2, 3, 3, // 46-60
+  2, 4, 3, 4,                                    // 61-64
 ] as AnswerValue[]
 
 export const MOCK_AI_ADVICE: AIAdvice = {

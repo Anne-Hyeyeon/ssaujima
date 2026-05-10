@@ -95,11 +95,24 @@ export interface AIAdvice {
   isFallback?: boolean;
 }
 
+export type Gender = 'female' | 'male';
+
 export interface MockUser {
   id: string;
   name: string;
+  gender: Gender;
+  partnerId: string | null;
   plan: 'free' | 'pro';
   createdAt: string;
+}
+
+export type TestTrack = 'simple' | 'pro';
+
+export interface PartnerTestRecord {
+  userId: string;
+  type: TestTrack;
+  answers: AnswerValue[];
+  submittedAt: string;
 }
 
 export interface SavedReport {

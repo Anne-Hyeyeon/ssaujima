@@ -18,6 +18,7 @@ import {
   computeReportStats,
   formatReportDate,
   formatReportId,
+  SCORE_BAND_ACTION_MESSAGES,
 } from '../../../lib/report-stats'
 import { CompatibilityRadarChart } from './RadarChart'
 import { ConflictCard } from './ConflictCard'
@@ -169,12 +170,11 @@ export const ProResultView = ({
                 {score}
               </span>
               <span className="text-[24px] font-medium text-[#a0a0a0]">/ 100</span>
-              <span className="ml-3 text-[12px] text-[#6b6b6b]">
-                전체 응답자 기준 상위{' '}
-                <span className="text-[#1a1a1a] font-semibold">{stats.scorePercentile}%</span>
-              </span>
             </div>
-            <p className="text-[16px] sm:text-[17px] text-[#1a1a1a] leading-relaxed">
+            <p className="text-[18px] sm:text-[20px] text-[#1a1a1a] font-semibold tracking-[-0.01em] leading-snug mb-2">
+              {SCORE_BAND_ACTION_MESSAGES[stats.scoreBand]}
+            </p>
+            <p className="text-[15px] sm:text-[16px] text-[#6b6b6b] leading-relaxed">
               {scoreHeadline(stats.scoreBand)}
             </p>
             <p className="text-[14px] text-[#6b6b6b] leading-relaxed mt-2">

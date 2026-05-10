@@ -60,6 +60,13 @@ export const SCORE_BAND_LABELS: Record<ScoreBand, string> = {
   caution: '주의 필요',
 }
 
+export const SCORE_BAND_ACTION_MESSAGES: Record<ScoreBand, string> = {
+  excellent: '두 분이라면 걱정 없겠어요!',
+  good: '안정적인 궁합이에요. 작은 조율만 더하면 완벽해요.',
+  fair: '조금 더 대화가 필요해요!',
+  caution: '많은 대화가 필요해요!',
+}
+
 const computeScoreBand = (score: number): ScoreBand => {
   if (score >= 80) return 'excellent'
   if (score >= 65) return 'good'

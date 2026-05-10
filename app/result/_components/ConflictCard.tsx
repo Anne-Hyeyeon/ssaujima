@@ -2,6 +2,7 @@
 
 import clsx from 'clsx'
 import { CATEGORY_LABELS } from '../../../lib/types'
+import { summarizeConflict } from '../../../lib/insight-text'
 import type { ConflictDetail, AIAdvice } from '../../../lib/types'
 
 interface IConflictCardProps {
@@ -25,7 +26,9 @@ export const ConflictCard = ({ conflict, advice, index }: IConflictCardProps) =>
           <p className="text-[10px] font-semibold text-[#b0a8c0] uppercase tracking-wide mb-0.5">
             {CATEGORY_LABELS[conflict.category]}
           </p>
-          <p className="text-[14px] font-semibold text-[#2d2340] leading-snug">{conflict.title}</p>
+          <p className="text-[14px] font-semibold text-[#2d2340] leading-snug">
+            {summarizeConflict(conflict.title, conflict.diff)}
+          </p>
         </div>
       </div>
 
