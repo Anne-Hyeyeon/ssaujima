@@ -63,7 +63,16 @@ export const PricingSection = () => {
           {PLANS.map((plan) => (
             <div
               key={plan.name}
-              className="border border-[#e8e8e6] rounded-2xl p-6 flex flex-col gap-5"
+              className={
+                plan.recommended
+                  ? 'rounded-2xl p-6 flex flex-col gap-5 border border-[#e0d4f7]'
+                  : 'border border-[#e8e8e6] rounded-2xl p-6 flex flex-col gap-5'
+              }
+              style={
+                plan.recommended
+                  ? { background: 'linear-gradient(145deg, #f5f0fd 0%, #fff 100%)' }
+                  : undefined
+              }
             >
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -77,17 +86,21 @@ export const PricingSection = () => {
               <p className="text-[28px] font-medium tracking-[-0.02em] text-[#1a1a1a]">
                 {plan.price}
               </p>
-              <ul className="flex flex-col gap-2 flex-1">
+              <ul className="flex flex-col gap-2.5 flex-1">
                 {plan.features.map((f) => (
                   <li key={f.text} className="flex items-center gap-2 text-[15px] text-[#6b6b6b]">
-                    <span className="text-[#f47b9b]" aria-hidden="true">✓</span>
+                    <span className="text-[#f47b9b] font-medium" aria-hidden="true">✓</span>
                     {f.text}
                   </li>
                 ))}
               </ul>
               <Link
                 href={plan.ctaHref}
-                className="inline-flex items-center justify-center border border-[#e8e8e6] text-[#1a1a1a] rounded-full px-7 py-3.5 text-[15px] font-medium tracking-[-0.01em] hover:bg-[#fafaf9] transition-colors"
+                className={
+                  plan.recommended
+                    ? 'inline-flex items-center justify-center bg-[#1a1a1a] text-white rounded-full px-7 py-3.5 text-[15px] font-medium tracking-[-0.01em] hover:opacity-90 transition-opacity'
+                    : 'inline-flex items-center justify-center border border-[#e8e8e6] text-[#1a1a1a] rounded-full px-7 py-3.5 text-[15px] font-medium tracking-[-0.01em] hover:bg-[#fafaf9] transition-colors'
+                }
               >
                 {plan.ctaLabel}
               </Link>

@@ -40,17 +40,27 @@ export const ProblemSection = () => {
           <br />
           문제가 돼요.
         </h2>
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-10">
           {DIALOGUES.map((d) => (
-            <article key={d.topic} className="flex flex-col gap-2">
-              <p className="text-xs font-medium text-[#a0a0a0] uppercase tracking-wide mb-1">
+            <article key={d.topic}>
+              <p className="text-[11px] font-semibold text-[#c2884d] uppercase tracking-[0.1em] mb-3">
                 {d.topic}
               </p>
-              <div className="bg-white/60 rounded-2xl px-4 py-3 self-start max-w-[85%]">
-                <p className="text-[15px] text-[#1a1a1a] leading-relaxed">{d.personA}</p>
-              </div>
-              <div className="bg-[#ffeef3]/80 rounded-2xl px-4 py-3 self-end max-w-[85%]">
-                <p className="text-[15px] text-[#1a1a1a] leading-relaxed">{d.personB}</p>
+              <div className="flex flex-col gap-2">
+                {/* Person A bubble */}
+                <div
+                  className="self-start max-w-[82%] rounded-2xl rounded-tl-sm px-4 py-3"
+                  style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(4px)' }}
+                >
+                  <p className="text-[15px] text-[#1a1a1a] leading-[1.6]">{d.personA}</p>
+                </div>
+                {/* Person B bubble */}
+                <div
+                  className="self-end max-w-[82%] rounded-2xl rounded-tr-sm px-4 py-3"
+                  style={{ background: 'rgba(255,238,243,0.8)', backdropFilter: 'blur(4px)' }}
+                >
+                  <p className="text-[15px] text-[#1a1a1a] leading-[1.6]">{d.personB}</p>
+                </div>
               </div>
             </article>
           ))}

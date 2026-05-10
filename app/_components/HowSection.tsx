@@ -30,29 +30,36 @@ export const HowSection = () => {
           <span className="text-[#f47b9b]">02</span>
           <span className="text-[#6b6b6b]"> — 방법</span>
         </p>
-        <h2 className="text-[32px] font-medium tracking-[-0.02em] leading-[1.2] text-[#1a1a1a] mb-12">
+        <h2 className="text-[32px] font-medium tracking-[-0.02em] leading-[1.2] text-[#1a1a1a] mb-14">
           각자 답하고
           <br />
           AI가 분석해요.
         </h2>
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-0">
+
+        <div className="flex flex-col md:flex-row items-stretch gap-0">
           {STEPS.map((step, idx) => (
-            <div key={step.number} className="flex md:flex-row items-start md:items-center gap-6 md:gap-0 flex-1">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-6 h-6 rounded-full bg-[#f47b9b] text-white text-xs font-medium flex items-center justify-center shrink-0">
-                    {step.number}
-                  </span>
-                  <h3 className="text-xl font-medium tracking-[-0.01em] leading-[1.3] text-[#1a1a1a]">
-                    {step.title}
-                  </h3>
+            <div key={step.number} className="flex md:flex-row items-stretch flex-1">
+              {/* Step card */}
+              <div className="flex-1 flex flex-col gap-3 p-5 rounded-2xl hover:bg-[#fafaf9] transition-colors">
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold text-white shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #f47b9b, #e05e85)' }}
+                >
+                  {step.number}
                 </div>
-                <p className="text-[15px] text-[#6b6b6b] leading-relaxed pl-8">
+                <h3 className="text-[17px] font-medium tracking-[-0.01em] text-[#1a1a1a]">
+                  {step.title}
+                </h3>
+                <p className="text-[14px] text-[#6b6b6b] leading-relaxed">
                   {step.description}
                 </p>
               </div>
+
+              {/* Connector arrow */}
               {idx < STEPS.length - 1 && (
-                <span className="text-[#a0a0a0] text-lg md:px-6 hidden md:block" aria-hidden="true">→</span>
+                <div className="hidden md:flex items-center justify-center px-2 text-[#d0d0d0] text-lg select-none" aria-hidden="true">
+                  →
+                </div>
               )}
             </div>
           ))}
