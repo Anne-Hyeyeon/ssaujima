@@ -11,9 +11,9 @@ import type { AnswerValue } from '../../../lib/types'
 export default async function SimpleResultPage({
   searchParams,
 }: {
-  searchParams: Promise<{ a?: string; demo?: string }>
+  searchParams: Promise<{ a?: string; b?: string; demo?: string }>
 }) {
-  const { a, demo } = await searchParams
+  const { a, b, demo } = await searchParams
 
   let answersA: AnswerValue[]
   let answersB: AnswerValue[]
@@ -27,7 +27,12 @@ export default async function SimpleResultPage({
     const decoded = decodeAnswers(a, 15)
     if (!decoded) redirect('/test/simple')
     answersA = decoded as AnswerValue[]
-    answersB = MOCK_ANSWERS_B
+    if (b) {
+      const decodedB = decodeAnswers(b, 15)
+      answersB = (decodedB as AnswerValue[]) ?? MOCK_ANSWERS_B
+    } else {
+      answersB = MOCK_ANSWERS_B
+    }
   }
 
   const computed = computeSimple(answersA!, answersB!, QUESTIONS_SIMPLE)

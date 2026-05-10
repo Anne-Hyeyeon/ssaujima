@@ -1,20 +1,42 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
-import type { MockUser } from '@/lib/types'
+import { useState, useEffect, useCallback } from 'react'
+import {
+  getCurrentUser,
+  signOut,
+  USER_CHANGED_EVENT,
+} from '../../lib/mock-auth'
+import type { MockUser } from '../../lib/types'
 
 export const Header = () => {
   const [user, setUser] = useState<MockUser | null>(null)
 
-  useEffect(() => {
-    const raw = localStorage.getItem('ssaujima:user')
-    setUser(raw ? (JSON.parse(raw) as MockUser) : null)
+  const refresh = useCallback(() => {
+    setUser(getCurrentUser())
   }, [])
 
+  useEffect(() => {
+    refresh()
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'ssaujima:user' || e.key === 'ssaujima:users' || e.key === null) {
+        refresh()
+      }
+    }
+    window.addEventListener('storage', handleStorage)
+    window.addEventListener(USER_CHANGED_EVENT, refresh)
+
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener(USER_CHANGED_EVENT, refresh)
+    }
+  }, [refresh])
+
   const handleLogout = () => {
-    localStorage.removeItem('ssaujima:user')
-    window.location.reload()
+    signOut()
+    setUser(null)
+    window.location.href = '/'
   }
 
   return (
@@ -29,6 +51,9 @@ export const Header = () => {
         <nav className="flex items-center gap-4">
           {user ? (
             <>
+              <span className="text-sm text-[#a0a0a0] hidden sm:inline">
+                {user.name}님
+              </span>
               <Link
                 href="/my"
                 className="text-sm text-[#6b6b6b] hover:text-[#1a1a1a] transition-colors"

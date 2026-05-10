@@ -2,6 +2,7 @@
 // Pattern: numbered item, category label, severity tag.
 
 import { CATEGORY_LABELS } from '../../../lib/types'
+import { summarizeCaution } from '../../../lib/insight-text'
 import type { Insight } from '../../../lib/types'
 
 interface ICautionsListProps {
@@ -36,7 +37,9 @@ export const CautionsList = ({
               <p className="text-[11px] tracking-[0.04em] uppercase text-[#e07020] font-semibold mb-1">
                 {CATEGORY_LABELS[item.category]}
               </p>
-              <p className="text-[14px] text-[#1a1a1a] leading-relaxed">{item.text}</p>
+              <p className="text-[14px] text-[#1a1a1a] leading-relaxed">
+                {summarizeCaution(item.text, item.diff)}
+              </p>
             </div>
             <span
               className={`shrink-0 inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full ${sev.tone}`}
